@@ -1,0 +1,6 @@
+commands:
+  - get keybase://path/to/file
+  - get keybase://path/to/file2
+  - get keybase://path/to/file3
+  - clone keybase://path/to/clone
+  - github-action-secrets keybase://path/to/file

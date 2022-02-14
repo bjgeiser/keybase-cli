@@ -1,0 +1,57 @@
+FROM golang:1.17-alpine3.15 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+# Build dependencies
+RUN apk update && apk --no-cache --update add build-base
+#    git \
+#    ca-certificates \
+#    golang-go \
+#    wget \
+#    xz-utils \
+#    upx
+RUN MACHINE_TYPE=$(uname -m) && echo $MACHINE_TYPE &&\
+    if [ ${MACHINE_TYPE} == 'x86_64' ]; then type="amd64"; fi && \
+    if [ ${MACHINE_TYPE} == 'aarch64' ]; then type="arm64"; fi && \
+    if [ ${MACHINE_TYPE} == 'armv7l' ]; then type="arm"; fi && \
+    wget https://github.com/upx/upx/releases/download/v3.96/upx-3.96-${type}_linux.tar.xz && \
+    tar xf upx-3.96-${type}_linux.tar.xz &&  \
+    mv upx-3.96-${type}_linux/upx /usr/local/bin/upx
+
+ENV GOPATH=$HOME/gopath
+ENV KEYBASE_NO_GUI=1
+ENV KEYBASE_SKIP_32_BIT=1
+
+RUN version=v5.9.1 && \
+    #wget -qO- https://github.com/keybase/client/releases/download/$version/keybase-$version.tar.xz | xz -d | tar x  && \
+    wget --no-check-certificate https://github.com/keybase/client/releases/download/$version/keybase-$version.tar.xz && \
+    tar xf keybase-$version.tar.xz && \
+    mv client-$version client
+
+RUN cd client/go && \
+go install -ldflags '-w -s' -tags production github.com/keybase/client/go/kbfs/kbfsgit/git-remote-keybase && \
+upx --best --lzma $GOPATH/bin/git-remote-keybase
+
+RUN cd client/go && \
+go install -ldflags '-w -s' -tags production github.com/keybase/client/go/kbfs/kbfsfuse && \
+upx --best --lzma $GOPATH/bin/kbfsfuse
+
+RUN  cd client/go && \
+go install -ldflags '-w -s' -tags production github.com/keybase/client/go/keybase && \
+upx --best --lzma $GOPATH/bin/keybase
+
+
+FROM alpine
+
+RUN apk update && apk --no-cache --update add python3 py3-yaml git
+
+COPY --from=builder /gopath/bin/keybase /usr/local/bin
+COPY --from=builder /gopath/bin/kbfsfuse /usr/local/bin
+COPY --from=builder /gopath/bin/git-remote-keybase /usr/local/bin
+COPY process_commands.py /
+COPY startup.sh /
+RUN chmod a+x /startup.sh
+
+ENV KEYBASE_RUN_MODE="prod kbfsfuse /keybase"
+ENV KEYBASE_NO_GUI=1
+
+ENTRYPOINT ["/startup.sh"]

@@ -1,0 +1,26 @@
+name: Docker Build
+
+on:
+  pull_request:
+    branches: main
+  push:
+    branches: main
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  publish_readme:
+    runs-on: [ubuntu-latest]
+    steps:
+      # Get the code
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v2
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKER_HUB_USER }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKER_HUB_PW }}
+          DOCKERHUB_REPOSITORY: bjgeiser/keybase-cli
+
