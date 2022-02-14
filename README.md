@@ -6,6 +6,10 @@ Keybase docker container that exposes the keybase CLI and some common commands s
 
 GitHub: https://github.com/bjgeiser/keybase-cli <br>
 Docker Hub: https://hub.docker.com/r/bjgeiser/keybase-cli
+
+# GitHub Action
+The primary purpose of this docker image is for use in this GitHub action: <br>https://github.com/bjgeiser/keybase-action
+
 ## Usage
 
 ### Example Docker Command
@@ -37,15 +41,17 @@ Using `--user UID:GID` will not set up a user with a home directory (required fo
 
 ## Commands
 
-| Command               | syntax                                                                                                                                     | Description                                         |
-|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------|
-| github-action-secrets | `github-action-secrets keybase://path/to/file`                                                                                             | For use in github actions<br>to get keybase secrets |
-| get                   | `get keybase://path/to/file {localpath}`                                                                                                   | Get the file from keybase and copy to a local path  |
-| read                  | `read keybase://path/to/file`                                                                                                              | Dump contents of file to stdout                     |
-| clone                 | `clone {git clone options} keybase://path/to/repo {localpath}`                                                                             | Clone a keybase git repository                      |
-| raw                   | See: [client command](https://book.keybase.io/docs/cli)                                                                                    | Run any keybase client command                      |
-| batch                 | `batch "{any of the above commands},{any of the above commands}"` or<br> `batch "{any of the above commands};{any of the above commands}"` | Run more than 1 command in a single docker run      |
-| file                  | `file /path/to/file`                                                                                                                       | Run more than 1 command in a single docker run                      |
+| Command                      | syntax                                                                                                                                      | Description                                        |
+|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| github-action-secrets        | `github-action-secrets keybase://path/to/file`                                                                                              | For use in github actions<br>to get keybase secrets |
+| get                          | `get keybase://path/to/file {localpath}`                                                                                                    | Get the file from keybase and copy to a local path |
+| read                         | `read keybase://path/to/file`                                                                                                               | Dump contents of file to stdout                    |
+| clone                        | `clone {git clone options} keybase://path/to/repo {localpath}`                                                                              | Clone a keybase git repository                     |
+| batch                        | `batch "{any of the above commands},{any of the above commands}"` or<br> `batch "{any of the above commands};{any of the above commands}"`  | Run more than 1 command in a single docker run     |
+| file                         | `file /path/to/file`                                                                                                                        | Run more than 1 command in a single docker run     |
+| keybase                      | See: [client command](https://book.keybase.io/docs/cli)                                                                                     | Run any keybase client command                     |
+| {any other command aka `raw`} | Commands that don't match the above keywords will be run as is.  Such as `chmod a+r filename`                                              | Unmatched commands run as is                       |
+
 > **Note**: `{arguments}` are optional.
 
 ### Command: `github-action-secrets`
@@ -144,14 +150,28 @@ docker run --rm -v $PWD:$PWD -w $PWD -e KEYBASE_USERNAME="$KEYBASE_USER" \
    -e KEYBASE_PAPERKEY="$KEYBASE_PAPERKEY" -e KEYBASE_UID=$UID -e KEYBASE_GID=$GID \
    bjgeiser/keybase-cli clone -b my_branch keybase://path/to/clone path/to/local
 ```
-### Command: `raw`
+### Command: `keybase`
 
 ----
+Execute keybase cli commands.
 ```bash
 docker run --rm -v $PWD:$PWD -w $PWD -e KEYBASE_USERNAME="$KEYBASE_USER" \
    -e KEYBASE_PAPERKEY="$KEYBASE_PAPERKEY" -e KEYBASE_UID=$UID -e KEYBASE_GID=$GID \
    bjgeiser/keybase-cli keybase --version
 ```
+>Note: Any commands that don't match one of the [commands](#commands) are tried as raw commands.  Things such as `ls -la .` or `keybase --version` will work. 
+
+
+### Command: `raw`
+
+----
+Execute raw commands from inside the container.
+```bash
+docker run --rm -v $PWD:$PWD -w $PWD -e KEYBASE_USERNAME="$KEYBASE_USER" \
+   -e KEYBASE_PAPERKEY="$KEYBASE_PAPERKEY" -e KEYBASE_UID=$UID -e KEYBASE_GID=$GID \
+   bjgeiser/keybase-cli ls -la .
+```
+>Note: Any commands that don't match one of the [commands](#commands) are tried as raw commands.  Things such as `ls -la .` or `keybase --version` will work. 
 ### Command: `batch`
 
 ----
@@ -179,5 +199,7 @@ commands:
   - get keybase://path/to/file3
   - clone keybase://path/to/clone
   - github-action-secrets keybase://path/to/file
+  # modify file downloaded above
+  - chmod a+rw file3 
 ```
 

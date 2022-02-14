@@ -33,11 +33,11 @@ def execute_github_action_secrets(fileName):
             secrets = yaml.safe_load(f)
         else:
             secrets = {}
-            lines = f.readlines()
+            lines = f.splitlines()
             for l in lines:
                 if "=" in l:
                     split = l.split("=", 1)
-                    if "\"" == split[1][0]:
+                    if "\"" == split[1][0] or "\'" == split[1][0]:
                         secret = re.sub(' #.*', '', split[1])
                         secret = secret.strip()
                         secret = secret[1:-1]
