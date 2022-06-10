@@ -2,7 +2,15 @@
 
 set -euo pipefail
 
-if [ "$EUID" -eq 0 ]; then
+echo Running user UID: $UID
+if [ "$KEYBASE_UID" -eq $UID ]; then
+    echo Keybase user and image user are already the same
+    export STARTUP_USER_SET=1
+fi
+
+if [[ "$EUID" -eq 0 && ! -v STARTUP_USER_SET ]]; then
+
+  echo Creating keybase user
 
   gids=""
   if [[ -v KEYBASE_GID ]] && [[ ! -z "$KEYBASE_GID" ]] ; then
@@ -17,6 +25,7 @@ if [ "$EUID" -eq 0 ]; then
     uids="-u $KEYBASE_UID"
   fi
 
+
   adduser $uids $gids --disabled-password --gecos "" keybase >/dev/null
 
   export STARTUP_USER_SET=1
@@ -30,7 +39,6 @@ else
     echo "Error: Set UID and GID using -e KEYBASE_UID={uid} -e KEYBASE_GID={gid} instead of --user"
     exit 1
   fi
-
 
   # start keybase service in the background
   keybase -run-mode prod service &>/dev/null &
