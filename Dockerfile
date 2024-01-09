@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Build dependencies
@@ -43,7 +43,7 @@ go install -ldflags '-w -s' -tags production github.com/keybase/client/go/kbfs/k
 upx --best --lzma /root/gopath/bin/git-remote-keybase
 
 
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y --no-install-recommends python3 python3-yaml git && \
