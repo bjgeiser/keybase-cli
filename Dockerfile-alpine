@@ -21,7 +21,7 @@ ENV GOPATH=$HOME/gopath
 ENV KEYBASE_NO_GUI=1
 ENV KEYBASE_SKIP_32_BIT=1
 
-RUN version=v5.9.1 && \
+RUN version=v6.2.4 && \
     #wget -qO- https://github.com/keybase/client/releases/download/$version/keybase-$version.tar.xz | xz -d | tar x  && \
     wget --no-check-certificate https://github.com/keybase/client/releases/download/$version/keybase-$version.tar.xz && \
     tar xf keybase-$version.tar.xz && \
