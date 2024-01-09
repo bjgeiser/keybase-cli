@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS builder
+FROM golang:1.21-bullseye AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 # Build dependencies
@@ -43,10 +43,10 @@ go install -ldflags '-w -s' -tags production github.com/keybase/client/go/kbfs/k
 upx --best --lzma /root/gopath/bin/git-remote-keybase
 
 
-FROM ubuntu:22.04
+FROM debian:bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt update && apt install -y --no-install-recommends python3 python3-yaml git libc6 && \
+RUN apt update && apt install -y --no-install-recommends python3 python3-yaml git && \
     #apt install -y --no-install-recommends python3-yaml && pip install pyyaml && \
     rm -rf /var/lib/apt/lists/*
 
